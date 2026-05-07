@@ -1,0 +1,8 @@
+checkpoints/
+datasets/
+checkpoints-new/
+envs/
+.python-version
+checkpoint-v2/
+alignment
+ghd_fitting_checkpoints

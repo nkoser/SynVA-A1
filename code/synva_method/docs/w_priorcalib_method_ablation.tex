@@ -1,0 +1,313 @@
+% Appendix fragment. Include from the main paper with:
+% \input{docs/w_priorcalib_method_ablation}
+% Required packages: amsmath, amssymb, bm, booktabs, graphicx
+
+\section{SynVA-A1}
+\label{Appendix:SynVA-A1}
+
+\subsection{Model-specific data pre-processing}
+
+SynVA-A1 is trained on the processed real aneurysm cases described in the main
+text, i.e. the combined AneuX, IntrA, and CMHA cases after the common mesh and
+label preprocessing. We use only those cases for which the GHD fitting step can
+be computed successfully. The synthetic SynVA-P1 dataset is not used for this
+model. The model-specific preprocessing has two purposes: it first converts
+each aneurysm into a common GHD representation, and it then extracts the
+condition variables used by the conditional VAE.
+
+For the GHD fit, the target geometry is the aneurysm sac together with the
+ostium neck. The surrounding parent vessel and adjacent branches are excluded
+from the deformation target, because SynVA-A1 is intended to generate an
+aneurysm anchored to a given ostium rather than a complete pathological vessel
+segment. The sac mesh remains open at the ostium. The opening is not closed
+for canonical-mesh construction; instead, its boundary is retained and later
+used to build the ostium information required for the fitting losses.
+
+All fits are expressed relative to one canonical aneurysm mesh. Instead of
+choosing one training case as this template, we build an average canonical sac
+from the training data. After an initial ostium-based alignment, rays are cast
+from a common origin $\bm{c}$ along shared directions $\bm{u}_j$. If $r_{ij}$
+is the intersection distance for case $i$ and ray $j$, the canonical radius is
+$\bar{r}_j=\operatorname*{median}_{i} r_{ij}$ and the corresponding canonical
+vertex is $\bm{v}^{\mathrm{can}}_j=\bm{c}+\bar{r}_j\bm{u}_j$. This produces a
+single canonical sac with an open neck boundary and a shared graph topology for
+all subsequent fits. The canonical ostium ring is extracted from this boundary.
+
+After the canonical and target meshes have been prepared, an ostium checkpoint
+is created for each case. The ostium points are mapped to nearby mesh
+vertices, sorted into an ordered boundary ring, optionally smoothed in the
+ostium plane, and triangulated as a simple opening patch. This patch is not
+used to close the canonical sac; it provides a consistent surface object on
+which the neck and opening losses can be evaluated.
+
+Each target aneurysm is then aligned to this canonical frame before
+optimization. The pre-alignment is stored as a homogeneous transformation
+matrix $\bm{H}_{i}^{\mathrm{pre}}\in\mathbb{R}^{4\times4}$. It translates the
+target ostium center to the canonical center, rotates the target ostium normal
+onto the canonical normal, and aligns the dominant in-plane axis of the target
+ostium with the corresponding canonical axis. For homogeneous coordinates
+$\tilde{\bm{p}}$, the aligned point is
+$\tilde{\bm{p}}_{i}^{\mathrm{align}}=\bm{H}_{i}^{\mathrm{pre}}\tilde{\bm{p}}_{i}^{\mathrm{raw}}$.
+The aligned sac is saved as the fitting mesh, and the stored transformation
+allows the fitted result to be related back to the processed data coordinates.
+The canonical mesh and the aligned targets are normalized before the GHD
+optimization.
+
+The CVAE does not use the raw target mesh as its regression target. Instead,
+the target vector is read from the GHD fitting checkpoint and consists of the
+flattened GHD coefficients with $K=144$ basis functions and the fitted scale.
+The fitted rotation and translation are not predicted by SynVA-A1; they are
+only used to decode fitted meshes and to evaluate geometry losses in the
+aligned coordinate frame.
+
+The condition input is extracted from the same case and is centered around the
+ostium. SynVA-A1 therefore does not use the complete vessel tree as input, but
+only the local vessel geometry that is relevant for aneurysm attachment. To
+make this vessel patch consistent with the fitted GHD representation, the
+candidate vessel points are first mapped into the same local coordinate frame
+as the fitted aneurysm. Distances are then measured from the ostium-ring
+centroid, and a neighborhood around the ostium is retained. The neighborhood
+radius is chosen from the ostium size and the local distance distribution, so
+that it covers the neck region and nearby parent-vessel surface without
+including the entire vessel. From this local patch, 256 points are selected by
+farthest-point sampling. If the local selection contains too few points, the
+full candidate surface is used as a fallback.
+
+The remaining case information is prepared in the same local frame. The actual
+network condition consists of the ordered ostium ring, compact ostium
+parameters containing center, normal, radius, and eccentricity, the local
+vessel point set, and a small morphology descriptor vector. We use only
+selected global sac descriptors as morphology condition: aneurysm surface area
+($A_A$), aneurysm volume ($V_A$), convex-hull surface area ($A_{CH}$),
+convex-hull volume ($V_{CH}$), maximum diameter ($D_{\max}$), maximum height
+($H_{\max}$), maximum width ($W_{\max}$), orthogonal height ($H_{\perp}$), and
+orthogonal width ($W_{\perp}$). In addition, 64 ostium samples and 256 dense
+samples from the segmented ostium attachment region are stored for the
+geometry losses at the vessel--aneurysm interface. GHD targets and continuous
+condition variables are normalized with statistics computed on the training
+split.
+
+\subsection{Architecture}
+
+SynVA-A1 consists of a GHD fitting stage and a conditional aneurysm generator.
+The fitting stage defines a compact and anatomically aligned parameterization
+of each training aneurysm. The generator then learns a conditional prior over
+these fitted parameters, using the local ostium, nearby vessel geometry, and
+morphology descriptors as conditioning information.
+
+\subsubsection{GHD fitting}
+
+Our fitting procedure is based on the Graph Harmonic Deformation (GHD)
+representation introduced in AneuG~\cite{ding2025two}, but adapts it from a
+full aneurysm--vessel segment to the local aneurysm domain considered here.
+AneuG fits a vascular structure that includes the parent artery and several
+openings. In contrast, our target is the aneurysm sac together with its single
+ostium neck. The parent vessel is not part of the deformation target and is
+used later only as conditioning information for the generator.
+
+We retain the core GHD representation from AneuG. Each case is fitted by
+deforming the canonical sac in a shared graph-harmonic basis and by optimizing
+a global similarity transform. The target of the fit is therefore not a raw
+mesh with arbitrary topology, but a compact set of GHD coefficients in the
+common canonical eigenspace. In our implementation this basis contains
+$K=144$ graph-harmonic modes.
+
+The general shape terms are also inherited from the original AneuG fitting
+objective. We use surface Chamfer distance and surface-normal matching to align
+the deformed canonical sac with the target sac. We further keep the standard
+mesh regularizers used in AneuG: Laplacian smoothing, edge-length
+regularization, normal-consistency regularization, and local rigidity. These
+terms control the overall sac shape and discourage noisy or folded
+deformations.
+
+The main methodological change is the treatment of the ostium. Original AneuG
+supervises several vessel openings and, in its full-vessel setting, can use
+differentiable occupancy and differentiable centreline losses to constrain the
+parent-vessel segment. Since SynVA-A1 does not fit the parent vessel, these
+full-vessel losses are disabled in our sac-and-neck fitting mode. Instead, we
+replace the multi-opening objective by a single-ostium objective. The ostium is
+represented by an ordered boundary ring and by a reconstructed opening patch
+from the ostium checkpoint. This allows us to supervise the neck directly: the
+opening position is matched to the target, the opening normal is aligned using
+a robust ring-based normal estimate, and an area term prevents collapse of the
+neck opening. Additional overlap, boundary-smoothness, and relative-volume
+terms stabilize the vessel--aneurysm interface and the global sac size.
+
+Thus, the GHD fitting contribution in SynVA-A1 is not a new deformation
+parameterization, but a new anatomical use of the AneuG fitting machinery. We
+use an average canonical sac instead of a single representative template, fit
+only the aneurysm sac and one open ostium, replace full-vessel centreline and
+occupancy constraints by ostium-specific neck constraints, and reuse one
+precomputed canonical eigenspace for all target fits.
+
+\subsubsection{Conditional Aneurysm Generator}
+
+SynVA-A1 keeps the compact conditional GHD-VAE backbone used in AneuG. This is
+the part that remains deliberately close to the original implementation: the
+network operates on GHD parameters rather than mesh vertices, uses a Gaussian
+latent space with the standard reparameterization trick, and injects the
+condition on the decoder side. In our case the VAE input has 433 dimensions,
+corresponding to $144\times3$ GHD coefficients plus the fitted scale.
+
+The encoder receives only this normalized GHD target. It consists of a linear
+input projection, one residual MLP block, and two output heads that predict the
+latent mean and log-variance. The decoder mirrors this compact design. A
+108-dimensional latent sample is concatenated with the encoded condition,
+passed through a linear layer and one residual MLP block, and mapped back to
+the normalized GHD coefficients and scale. Both encoder and decoder use a
+hidden dimension of 256. Thus, the generative backbone is still the same
+AneuG-style conditional GHD-VAE: the changes are not in the basic VAE
+mechanism, but in what is provided as anatomical condition and how decoded
+samples are supervised.
+
+The condition network is the main architectural extension. In the original
+AneuG setup, the conditional VAE is driven by a small morphology condition.
+SynVA-A1 replaces this by a local vessel--ostium condition. The local vessel
+patch contains 256 points around the ostium and is encoded with a
+PointNet-style branch using shared point-wise MLP layers followed by max
+pooling. The compact ostium parameters, namely center, normal, radius, and
+eccentricity, are encoded with a separate MLP. The ordered ostium ring is
+resampled to 20 points, flattened, and encoded with another MLP so that the
+decoder receives an explicit representation of the neck boundary. These
+branches are fused into a 96-dimensional vessel--ostium feature, concatenated
+with the selected morphology descriptors, and then projected to a
+64-dimensional condition embedding before being passed to the VAE decoder.
+
+SynVA-A1 also differs from the original AneuG model in the training signal
+applied to decoded samples. The dense attachment samples from the segmented
+ostium region are not used as an additional encoder branch in the final model;
+instead, they supervise the generated aneurysm near the vessel--aneurysm
+interface. Together with opening-center and side-of-plane losses, this forces
+the predicted GHD parameters to respect the prescribed ostium geometry.
+Finally, SynVA-A1 adds prior-path calibration: during training, samples drawn
+from the standard normal prior are decoded under the same condition and matched
+to case-level and batch-level target statistics. This trains the same sampling
+path that is used at inference time, where no fitted GHD target is available.
+
+\subsection{Training Details}
+
+\subsubsection{GHD fitting}
+
+GHD fitting is optimized separately for each prepared case with $K=144$ basis
+functions and one ostium. We use AdamW with learning rate
+$10^{-3}$ for 2000 epochs. The sac-and-neck fitting mode uses one opening and
+disables the full-vessel differentiable occupancy and centreline losses from
+the original AneuG fitting. The active fitting weights are summarized in
+Table~\ref{tab:synva-a1-ghd-loss-weights}.
+
+\begin{table}[t]
+\centering
+\caption{Loss weights used for the SynVA-A1 GHD fitting.}
+\label{tab:synva-a1-ghd-loss-weights}
+\scriptsize
+\begin{tabular}{lclc}
+\toprule
+Term & Weight & Term & Weight \\
+\midrule
+Surface Chamfer & 20.0 & Surface normals & 16.0 \\
+Laplacian & 0.1 & Edge length & 0.1 \\
+Normal consistency & 350.0 & Local rigidity & 100.0 \\
+Opening position & 10.0 & Opening normal & 0.1 \\
+Opening area & 1.0 & Opening overlap & 1.0 \\
+Opening boundary smoothness & 0.5 & Sac volume & 0.05 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{CVAE training}
+
+We use the same stratified and balanced split as the other models in this
+work: 530 training cases, 132 validation cases, and 100 held-out test cases
+with seed 42. The CVAE is trained for 4000 epochs with batch size 96 using
+AdamW with learning rate $10^{-4}$ and weight decay $10^{-4}$. The latent
+dimension is 108, the hidden dimension is 256, the condition embedding
+dimension is 64, and the vessel-condition embedding dimension is 96. We use a
+KL warm-up of 1000 epochs, free bits of 0.02, validation every 50 epochs, and
+select the checkpoint with the lowest validation total loss. The selected
+SynVA-A1 checkpoint is from epoch 2550.
+
+The CVAE loss combines three parts. The posterior reconstruction path matches
+the fitted GHD coefficients, scale, and decoded vertices while regularizing
+the posterior with a KL term. Geometry-aware losses supervise the generated
+aneurysm near the ostium through attachment-sample distance, sac-center error,
+wrong-side placement relative to the ostium plane, and opening-center error.
+Finally, prior-path calibration decodes direct prior samples
+$\bm{z}_{\mathrm{prior}}\sim\mathcal{N}(\bm{0},\bm{I})$ during training and
+matches them to case-level and batch-level target statistics. We write the
+overall objective as
+$\mathcal{L}_{\mathrm{CVAE}}=\mathcal{L}_{\mathrm{rec}}+\mathcal{L}_{\mathrm{geo}}+\mathcal{L}_{\mathrm{prior}}$.
+The corresponding weights are listed in
+Table~\ref{tab:synva-a1-cvae-loss-weights}.
+
+\begin{table}[t]
+\centering
+\caption{CVAE loss weights used for SynVA-A1.}
+\label{tab:synva-a1-cvae-loss-weights}
+\scriptsize
+\begin{tabular}{lclc}
+\toprule
+Term & Weight & Term & Weight \\
+\midrule
+Coeff. MSE & 1.0 & Attachment samples & 5.0 \\
+Scale Huber & 1.0 & Sac center & 10.0 \\
+Vertex MSE & 250.0 & Side & 2.0 \\
+KL & 0.01 & Opening center & 10.0 \\
+Prior Huber & 0.25 & Prior mean/std & 0.25 / 8.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Experimental setting}
+
+All ablations are trained and evaluated with the same splits and the same
+100-case test set. AneuG-Base denotes the compact GHD-VAE baseline. AneuG-Cond
+adds local ostium and vessel conditioning, AneuG-Cond-Morph additionally uses
+the morphology vector, and AneuG-Cond-Prior adds prior-path calibration without
+morphology conditioning. SynVA-A1 is the selected model with local
+conditioning, morphology conditioning, geometry-aware ostium supervision, and
+prior-path calibration. SynVA-A1-Ostium uses the same model but increases the
+ostium-related supervision weights.
+
+Evaluation uses paired surface Chamfer distance with 10k sampled surface
+points, mean absolute errors of morphology descriptors, and distribution-level
+metrics in standardized morphology space. Lower values are better for all
+reported metrics except coverage.
+
+\subsection{Additional results}
+
+\begin{table}[t]
+\centering
+\caption{Summary of held-out SynVA-A1 ablation results. Paired metrics are computed against the ground-truth sac; distribution metrics are computed in standardized morphology space. Lower is better except for coverage.}
+\label{tab:synva-a1-results-summary}
+\scriptsize
+\setlength{\tabcolsep}{3.0pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Variant & Chamfer & $D_{\max}$ & $H_{\max}$ & $W_{\max}$ & paired $\bm{z}$-L2 & coverage $\uparrow$ & MMD & Frechet \\
+\midrule
+AneuG-Base & 0.094099 & 0.113297 & 0.119853 & 0.074605 & 1.284607 & 0.84 & 0.006438 & 1.092620 \\
+AneuG-Cond & 0.089148 & 0.106784 & 0.108650 & 0.068531 & 1.217317 & 0.81 & 0.009033 & 1.111498 \\
+AneuG-Cond-Morph & \textbf{0.082113} & 0.107940 & 0.103746 & 0.061546 & 1.127876 & 0.83 & 0.010141 & 1.254649 \\
+AneuG-Cond-Prior & 0.087192 & \textbf{0.084195} & 0.081362 & 0.059200 & 1.008820 & \textbf{0.87} & \textbf{0.005170} & \textbf{0.984928} \\
+SynVA-A1 & 0.086362 & 0.084209 & \textbf{0.079572} & 0.057382 & \textbf{0.980470} & 0.85 & 0.005519 & 1.017597 \\
+SynVA-A1-Ostium & 0.086228 & 0.088093 & 0.082618 & \textbf{0.056933} & 0.996746 & 0.83 & 0.006162 & 1.061131 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The ablation shows that the individual additions affect different aspects of
+the generated aneurysms. Local conditioning improves paired reconstruction,
+morphology conditioning gives the lowest Chamfer distance, and prior-path
+calibration is most important for distribution-level behavior. SynVA-A1 gives
+the best paired morphology distance and the lowest height error, while
+AneuG-Cond-Prior achieves the strongest coverage, MMD, and Frechet distance.
+
+\IfFileExists{images/fail_cases_synva_a1.png}{%
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/fail_cases_synva_a1.png}
+  \vspace{-0.2cm}
+  \caption{Representative SynVA-A1 failure cases.}
+  \label{fig:synva-a1-failure-cases}
+\end{figure}
+}{}

@@ -1,0 +1,233 @@
+<mxfile host="app.diagrams.net" modified="2026-05-03T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="w-priorcalib-model" name="W prior-calibrated model">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Reference-compatible vessel-conditioned GHD-VAE with prior-path calibration" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="130" y="30" width="1340" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="band_inputs" value="Inputs and conditions" style="swimlane;html=1;startSize=34;rounded=0;collapsible=0;horizontal=1;fillColor=#F6F8FA;strokeColor=#B7C1CC;fontSize=14;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100" width="300" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="band_model" value="Stage-1 generator: our W priorcalib model" style="swimlane;html=1;startSize=34;rounded=0;collapsible=0;horizontal=1;fillColor=#FFFFFF;strokeColor=#B7C1CC;fontSize=14;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="390" y="100" width="690" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="band_ref" value="Strict reference pipeline kept fixed" style="swimlane;html=1;startSize=34;rounded=0;collapsible=0;horizontal=1;fillColor=#F7FBF8;strokeColor=#9DB8A2;fontSize=14;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="100" width="430" height="640" as="geometry" />
+        </mxCell>
+
+        <mxCell id="vessel" value="Aligned vessel mesh&#xa;part_aligned.obj" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#E9EEF5;strokeColor=#6F8299;fontSize=13;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="90" y="160" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="opa" value="OPA ostium geometry&#xa;ordered ring, center, plane" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#E9EEF5;strokeColor=#6F8299;fontSize=13;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="90" y="250" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="label2" value="Label-2 ostium samples&#xa;256 points" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#E9EEF5;strokeColor=#6F8299;fontSize=13;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="90" y="340" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="morph" value="Morphology condition&#xa;/path/to/synva_real_data" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EAF4EF;strokeColor=#6B9A7A;fontSize=13;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="90" y="430" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="xtrain" value="Training target x&#xa;GHD coefficients + scale" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFF4DF;strokeColor=#C18A35;fontSize=13;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="90" y="560" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="trainonly" value="training only" style="shape=mxgraph.basic.ribbon2;whiteSpace=wrap;html=1;fillColor=#FFF4DF;strokeColor=#C18A35;fontSize=12;fontColor=#6E4A14;" vertex="1" parent="1">
+          <mxGeometry x="150" y="630" width="110" height="32" as="geometry" />
+        </mxCell>
+
+        <mxCell id="condenc" value="Vessel-aware condition encoder&#xa;ring + label2 + vessel + morphology" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#DDEBFF;strokeColor=#4E79A7;fontSize=14;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="435" y="210" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="cembed" value="Condition embedding c&#xa;vessel-aware + morphology" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#DDEBFF;strokeColor=#4E79A7;fontSize=13;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="745" y="220" width="250" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="encoder" value="Posterior encoder&#xa;q(z | x, c)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FDEBD3;strokeColor=#C77C2D;fontSize=14;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="435" y="500" width="210" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="muvar" value="mu, logvar&#xa;reparameterization" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FDEBD3;strokeColor=#C77C2D;fontSize=13;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="690" y="505" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="zpost" value="z_post" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FDEBD3;strokeColor=#C77C2D;fontSize=13;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="910" y="510" width="75" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="zprior" value="z_prior ~ N(0,I)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8E1F5;strokeColor=#8064A2;fontSize=13;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="445" y="385" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="concat" value="[z, c]" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#F1F3F5;strokeColor=#7B8794;fontSize=13;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="745" y="385" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="decoder" value="Conditional decoder&#xa;reference W backbone" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#E8E1F5;strokeColor=#8064A2;fontSize=14;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="910" y="375" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xhat" value="Generated x_hat&#xa;GHD coefficients + scale" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#E8E1F5;strokeColor=#8064A2;fontSize=13;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="910" y="270" width="150" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="ghddecode" value="GHD decode on canonical sac&#xa;eigenbasis + scale" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EAF4EF;strokeColor=#6B9A7A;fontSize=13;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="910" y="160" width="150" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="surrogate" value="Differentiable Stage-3 surrogate losses&#xa;label2, center, side, opening" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#F7E6EA;strokeColor=#B85C72;fontSize=13;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="585" y="640" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="priorloss" value="Prior-path calibration&#xa;Huber(x_prior,x) + batch mean/std matching" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#F7E6EA;strokeColor=#B85C72;fontSize=13;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="870" y="640" width="190" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="baseloss" value="Base losses&#xa;MSE + KL + scale + vertex" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#F7E6EA;strokeColor=#B85C72;fontSize=13;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="405" y="640" width="155" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stage1raw" value="Stage-1 raw sac mesh&#xa;generated_aneurysm_world.obj" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EAF4EF;strokeColor=#6B9A7A;fontSize=13;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="160" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="refstage3" value="Reference Stage-3 alignment&#xa;vessel-mesh-editing-master" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EAF4EF;strokeColor=#6B9A7A;fontSize=13;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="285" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="stitch" value="Reference bridge stitching&#xa;+ ostium transition smoothing" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EAF4EF;strokeColor=#6B9A7A;fontSize=13;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="410" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="finalmesh" value="Final stitched vessel-sac mesh&#xa;strict reference output" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#D9F0E0;strokeColor=#4D8B5C;fontSize=14;fontStyle=1;fontColor=#172026;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="535" width="220" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="fixednote" value="Fixed for fair comparison: only Stage-1 generator is replaced." style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=13;fontStyle=2;fontColor=#4D5B66;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="655" width="260" height="35" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend_train" value="training-only path" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontColor=#6E4A14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="790" width="140" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_infer" value="inference / evaluation path" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontColor=#345B3D;" vertex="1" parent="1">
+          <mxGeometry x="80" y="825" width="180" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_loss" value="loss terms used during training" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontColor=#8A3F52;" vertex="1" parent="1">
+          <mxGeometry x="80" y="860" width="190" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_line_train" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#C18A35;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="290" y="802" as="sourcePoint" />
+            <mxPoint x="370" y="802" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend_line_infer" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4D8B5C;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="290" y="837" as="sourcePoint" />
+            <mxPoint x="370" y="837" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend_line_loss" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#B85C72;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="290" y="872" as="sourcePoint" />
+            <mxPoint x="370" y="872" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e_vessel_cond" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4E79A7;" edge="1" parent="1" source="vessel" target="condenc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_opa_cond" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4E79A7;" edge="1" parent="1" source="opa" target="condenc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_label_cond" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4E79A7;" edge="1" parent="1" source="label2" target="condenc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_morph_cond" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4E79A7;" edge="1" parent="1" source="morph" target="condenc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cond_embed" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4E79A7;" edge="1" parent="1" source="condenc" target="cembed">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_x_encoder" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#C18A35;" edge="1" parent="1" source="xtrain" target="encoder">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_c_encoder" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#C18A35;" edge="1" parent="1" source="cembed" target="encoder">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="775" y="540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_encoder_muvar" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#C18A35;" edge="1" parent="1" source="encoder" target="muvar">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_muvar_zpost" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#C18A35;" edge="1" parent="1" source="muvar" target="zpost">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_zprior_concat" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4D8B5C;" edge="1" parent="1" source="zprior" target="concat">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_zpost_concat" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#C18A35;" edge="1" parent="1" source="zpost" target="concat">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="950" y="610" />
+              <mxPoint x="805" y="610" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_c_concat" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4D8B5C;" edge="1" parent="1" source="cembed" target="concat">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_concat_decoder" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4D8B5C;" edge="1" parent="1" source="concat" target="decoder">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_decoder_xhat" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4D8B5C;" edge="1" parent="1" source="decoder" target="xhat">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_xhat_decode" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4D8B5C;" edge="1" parent="1" source="xhat" target="ghddecode">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_decode_stage1" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4D8B5C;" edge="1" parent="1" source="ghddecode" target="stage1raw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_stage1_ref3" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4D8B5C;" edge="1" parent="1" source="stage1raw" target="refstage3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ref3_stitch" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4D8B5C;" edge="1" parent="1" source="refstage3" target="stitch">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_stitch_final" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#4D8B5C;" edge="1" parent="1" source="stitch" target="finalmesh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_x_baseloss" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#B85C72;" edge="1" parent="1" source="xhat" target="baseloss">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="985" y="615" />
+              <mxPoint x="480" y="615" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_decode_surrogate" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#B85C72;" edge="1" parent="1" source="ghddecode" target="surrogate">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="985" y="610" />
+              <mxPoint x="715" y="610" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_x_priorloss" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#B85C72;" edge="1" parent="1" source="xhat" target="priorloss">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_label_surrogate" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#B85C72;" edge="1" parent="1" source="label2" target="surrogate">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="330" y="690" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_opa_surrogate" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;dashed=1;strokeColor=#B85C72;" edge="1" parent="1" source="opa" target="surrogate">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="665" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

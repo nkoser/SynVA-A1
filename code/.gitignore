@@ -1,0 +1,39 @@
+*/VesselGPT-MICCAI
+Data
+*/Data
+*/.vscode
+*/.wandb
+*/__pycache__
+*/todo.txt
+*/logs/
+
+
+# --------------------
+# Python bytecode
+# --------------------
+__pycache__/
+*.py[cod]
+
+# --------------------
+# VS Code
+# --------------------
+.vscode/
+!.vscode/settings.json
+
+# --------------------
+# Lokale / private Dateien
+# --------------------
+for_me.txt
+backup/
+
+# --------------------
+# Experimente & Logs
+# --------------------
+wandb/
+
+# --------------------
+# Optional: Visualisierung (generierte Dateien)
+# --------------------
+visualization/__pycache__/
+
+render

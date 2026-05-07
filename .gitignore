@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+*.ipynb
+
+logs/
+outputs/
+analysis_results/
+wandb/
+
+*.log
+*.tmp
+
+# Large model/data artifacts are intentionally not committed.
+*.pth
+*.pt
+*.pkl
+*.obj
+*.npz
